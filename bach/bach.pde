@@ -1,23 +1,28 @@
 //import processing.sound.*;
-
 String baseDirectory = "C:/dev/processing-hackathon/bach/";
-
-BufferedReader reader;
-ArrayList<String> lines = new ArrayList();
-int currentLine =0;
-String line;
+//dimensions of the canvas in pixels
 float width = 1024;
 float height = 700;
-float time;
-//int note;
-//int velocity;
-float tempo = 0.7;
-float transpose = 0;
+// tempo in proportion to original note duration; < 1 faster, >1 slower
+float tempo = 1;
+// change pitch by moving all note values n steps up or down
+int transpose = 0;
+
+float baseLine = (height/2)+100;
+int noteDistance = 10;
+
+//interal: don't touch
 PFont f;
+ArrayList<String> lines = new ArrayList();
+int currentLine =0;
+long time;
+int horizontalNotePosition = 50;
+float millisOffset=0;
 
 //SinOsc sinOsc;
  
 void setup() {
+  colorMode(HSB, 100, 100, 100);
   size(1024, 700);
   f = createFont("Arial",50,true);
   //sinOsc = new SinOsc(this);
@@ -27,9 +32,9 @@ void setup() {
 }
  
 void loadFile() {
-  reader = createReader(baseDirectory+"prelude.csv"); 
+  BufferedReader reader = createReader(baseDirectory+"prelude.csv"); 
   try {
-    line = reader.readLine();
+    String line = reader.readLine();
   while (line != null){    
       lines.add(line);  
       line = reader.readLine();
@@ -41,11 +46,14 @@ void loadFile() {
   
  
 void draw() {
-  float now = millis();
-  currentLine = currentLine == lines.size() ? 0 : currentLine;
-  //transpose = 20 * (mouseX == 0 ? width : float(mouseX)/width); 
+  float now = millis() - millisOffset;
+  if ( currentLine == lines.size() ){
+    currentLine = 0;
+    millisOffset = now;
+    now = 0;
+  }  
     if ( time < now ){    
-    line = lines.get(currentLine); 
+    String line = lines.get(currentLine); 
     currentLine++;
     //sinOsc.freq(getHertzForNote(note));
     //sinOsc.amp(1.0);
@@ -55,37 +63,49 @@ void draw() {
 
 void processNewLine(float millisRunning, String line){
    String[] pieces = split(line, "|");
-    time = (1/tempo) * float(pieces[0]);
-    int note = int(pieces[1]);
+    time = int(tempo * float(pieces[0]));
+    int note = transpose + int(pieces[1]);
     int velocity = int(pieces[2]);   
-     if ( abs(time-millisRunning) < 10){
+     //if ( abs(time-millisRunning) < 10){
       //println("time: "+time+" Note: "+note+" Duration:"+velocity);
       //println(transpose);
-      processNote(note,velocity);
-      
-    }    
+      processNote(note,velocity);      
+    //}    
 }
 
 void processNote(int note, int velocity){
-
-    background(0);
-      fill(255-(3*note), 1.8*note, time/300 );
-      int elWidth = 50+(7*note);
-      int elHeight = 50+(5*note);
-      ellipse(width/2, height/2, elWidth, elHeight);     
-      int fontSize = int(2.3*note);
-      textFont(f, fontSize);
-      fill(255);                        
-      text(note+"",width/2 - fontSize/2, height/2);
+    if ( velocity == 0)
+    return;
+    advanceNote();    
+    float noteHeight = baseLine - (noteDistance * (note-43 ));        
+    strokeWeight(3);        
+    fill(note*3 % 100, 100, 80 );   
+    stroke(note*3 % 100, 100, 80); 
+    line(horizontalNotePosition+14,noteHeight,horizontalNotePosition+14,noteHeight-40);        
+    ellipse(horizontalNotePosition, noteHeight, 28, 16);
+    text(getNoteNameForNote(note), horizontalNotePosition, noteHeight);
 }
 
 
+void advanceNote(){
+  if ( horizontalNotePosition > width-50){
+    clear();  
+    background(100);
+    horizontalNotePosition= 50;
+  } else {
+    horizontalNotePosition += 32;
+  }
+}
+
+String getNoteNameForNote(int note){
+  String[] notes = new String[]{"G","G#","A","A#","B","C","C#","D","D#","E","F","F#"};
+  return notes[abs((note-43) % 12)];
+}
 
 float getHertzForNote(int note){
-  //69 = 440
-  int noteOffset = int(transpose) + (note-69); 
+  //note 69 = 440 Hertz
+  int noteOffset = note-69; 
   float factor= pow(1.059463, noteOffset);
-  float noteHz = 440.0 * factor;
-  
+  float noteHz = 440.0 * factor;  
   return noteHz;
 }
