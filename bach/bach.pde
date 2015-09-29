@@ -1,4 +1,4 @@
-//import processing.sound.*;
+import processing.sound.*;
 //dimensions of the canvas in pixels
 float width = 1024;
 float height = 700;
@@ -17,14 +17,14 @@ int currentVelocity;
 int horizontalNotePosition = 50;
 float millisOffset=0;
 
-//SinOsc sinOsc;
+SinOsc sinOsc;
  
 void setup() {
   colorMode(HSB, 100, 100, 100);
   background(100);
   size(1024, 700);
-  //sinOsc = new SinOsc(this);
-  //sinOsc.play();
+  sinOsc = new SinOsc(this);
+  sinOsc.play();
   loadFile();
 }
  
@@ -39,8 +39,8 @@ void draw() {
   if ( time < now ){    
     String line = lines.get(currentLine); 
     currentLine++;
-    //sinOsc.freq(getHertzForNote(note));
-    //sinOsc.amp(1.0);
+    sinOsc.freq(getHertzForNote(currentNote));
+    sinOsc.amp(1.0);
     processNewLine(line);
   }
 } 
