@@ -9,7 +9,7 @@ float[] spectrum = new float[bands];
 
 void setup() {
   colorMode(HSB, 100, 100, 100);
-  size(1024, 800);
+  size(1800, 1200);
   background(255);
     
   // Create an Input stream which is routed into the Amplitude analyzer
@@ -42,7 +42,7 @@ float maxVal= 0;
   }
   bandFactor = min(100, max(20, 200 * mouseX/width));
   float valueFactor = max(1.0, 10.0 * mouseY/height);
-  println(valueFactor);
+  //println(valueFactor);
   float value = sensitivity * valueFactor * maxVal;
   
   stroke(min(100,value), 100, 100); 
